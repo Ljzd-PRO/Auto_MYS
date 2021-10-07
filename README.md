@@ -22,7 +22,7 @@
 
     `timeout`（服务器连接超时时间）
 
-2. 运行`main.py`。
+2. 运行`main.py`或运行[编译好的程序](https://github.com/FailDragon-Plus/auto_mys/releases)。
 
 3. 可前往`./logs/mhytool.log`查看日志。
 
