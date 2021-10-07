@@ -21,6 +21,7 @@ header = {"Accept-Encoding": "gzip, deflate, br",
                 "x-rpc-device_model": "iPhone11,8",
                 "x-rpc-device_name": "".join(random.sample('abcdefghijklmnopqrstuvwxyz0123456789', random.randrange(5))).upper(),
                 "x-rpc-sys_version": "14.0.1",}
+result_status = None
 
 ## 日志
 def get_file_path(file_name=""):
@@ -218,6 +219,7 @@ def start(userdata, setting):
     global timesleep_1
     global timesleep_2
     global net_timeout
+    global result_status
 
     stuid = userdata["uid"]
     stoken = userdata["stoken"]
