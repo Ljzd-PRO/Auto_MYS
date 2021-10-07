@@ -25,3 +25,6 @@
 2. 运行`main.py`。
 
 3. 可前往`./logs/mhytool.log`查看日志。
+
+
+- Python新手，代码可能有点繁琐有点问题😂
