@@ -2,10 +2,20 @@ import configparser
 import time
 import start
 import random
+import sys
+import os
+
+def get_file_path(file_name=""):
+    """
+    获取文件绝对路径, 防止在某些情况下报错
+    :param file_name: 文件名
+    :return:
+    """
+    return os.path.join(os.path.split(sys.argv[0])[0], file_name)
 
 print(start.to_log("INFO", "程序启动。"))
 conf = configparser.ConfigParser()
-conf.read('./config.ini')
+conf.read(get_file_path("config.ini"))
 
 userdata = {
     "uid":"",
@@ -22,6 +32,13 @@ setting["module_id"] = conf.get("Settings", "module_id")
 setting["t1"] = conf.get("Settings", "t1")
 setting["t2"] = conf.get("Settings", "t2")
 setting["timeout"] = conf.get("Settings", "timeout")
+
+timesleep_1 = setting["t1"]
+timesleep_2 = setting["t2"]
+if timesleep_1 == '' or None:
+    timesleep_1 = 2
+if timesleep_2 == '' or None:
+    timesleep_2 = 4
 
 result_error = []
 result_exception = []
@@ -45,9 +62,8 @@ while True:
         result_exception.append(userdata["uid"])
 
     i += 1
-
     if check(i) == True:
-        time.sleep(random.uniform(int(setting["t1"]), int(setting["t2"])))
+        time.sleep(random.uniform(timesleep_1, timesleep_2))
     else:
         break
 
