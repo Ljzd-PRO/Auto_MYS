@@ -82,8 +82,12 @@ def miyoushe_signin(module_id):
         result_status = "error"
         return "error"
     result = json.loads(res_signin.text)
-    if result["message"] == "签到成功":
-            print(to_log("INFO", "签到成功。"))
+    if result["message"] == "OK":
+            if "data" in result:
+                if "points" in result["data"]:
+                    print(to_log("INFO", "签到成功，获得 " + str(result["data"]["points"]) + " 米游币。"))
+            else:
+                print(to_log("INFO", "签到成功。"))
     elif result["message"] == "签到失败或重复签到":
         print(to_log("WARN", "签到失败或重复签到。"))
     else:
@@ -149,7 +153,7 @@ def miyoushe_forumPost(fid):
             try:
                 like_status = next(it)
                 if like_status['self_operation']['attitude'] != 0:
-                    print(to_log("INFO","ID: " + like_status['post']['post_id'] + " —— 帖子已经点赞过了。"))
+                    print(to_log("INFO","帖子ID: " + like_status['post']['post_id'] + " —— 已经点赞过了。"))
                 else:
                     break
             except StopIteration:
