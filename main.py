@@ -39,6 +39,8 @@ if timesleep_1 == '' or None:
     timesleep_1 = 2
 if timesleep_2 == '' or None:
     timesleep_2 = 4
+timesleep_1 = int(timesleep_1)
+timesleep_2 = int(timesleep_2)
 
 result_error = []
 result_exception = []
