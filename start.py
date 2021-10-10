@@ -225,6 +225,8 @@ def start(userdata, setting):
     global net_timeout
     global result_status
 
+    result_status = None
+
     stuid = userdata["uid"]
     stoken = userdata["stoken"]
     if stuid == '' or None:
