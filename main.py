@@ -19,7 +19,8 @@ conf.read(get_file_path("config.ini"))
 
 userdata = {
     "uid":"",
-    "stoken":""
+    "stoken":"",
+    "id":""
 }
 setting = {
     "module_id":"",
@@ -57,6 +58,7 @@ i = 1
 while True:
     userdata["uid"] = conf.get("Cookies", "uid_{0}".format(i))
     userdata["stoken"] = conf.get("Cookies", "stoken_{0}".format(i))
+    userdata["id"] = str(i)
     result = start.start(userdata, setting)
     if result == "error":
         result_error[str(i)] = userdata["uid"]
