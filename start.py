@@ -229,6 +229,7 @@ def start(userdata, setting):
 
     stuid = userdata["uid"]
     stoken = userdata["stoken"]
+    id = userdata["id"]
     if stuid == '' or None:
         print(to_log("ERROR", "请设置用户Cookies数据！"))
         return "error"
@@ -241,7 +242,7 @@ def start(userdata, setting):
         print(to_log("ERROR", "请设置游戏板块module_id的值！"))
         return "error"
     
-    print(to_log("INFO", "用户 {0}：开始任务。".format(stuid)))
+    print(to_log("INFO", "用户 uid_{0} - {1}：任务开始。".format(id, stuid)))
 
     fid_list = {
         '1': '1',
@@ -279,7 +280,7 @@ def start(userdata, setting):
     fid = int(fid_list[str(module_id)])
     miyoushe_forumPost(fid)
 
-    print(to_log("INFO", "用户 {0}：任务结束。".format(stuid)))
+    print(to_log("INFO", "用户 uid_{0} - {1}：任务结束。".format(id, stuid)))
     if result_status == "error":
         return "error"
     else:
