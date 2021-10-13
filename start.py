@@ -78,7 +78,7 @@ def miyoushe_signin(module_id):
     try:
         res_signin = s.post(url_signin, json=sign_data, headers=header, timeout=net_timeout)
     except:
-        print(to_log("WARN", "服务器连接失败。"))
+        print(to_log("ERROR", "服务器连接失败。"))
         result_status = "error"
         return "error"
     result = json.loads(res_signin.text)
@@ -107,7 +107,7 @@ def miyoushe_forumPost(fid):
     try:
         res = s.get(URL, headers=header, timeout=net_timeout)
     except:
-        print(to_log("WARN", "服务器连接失败。"))
+        print(to_log("ERROR", "服务器连接失败。"))
         result_status = "error"
         return "error"
     res_text = json.loads(res.text)
@@ -129,7 +129,7 @@ def miyoushe_forumPost(fid):
         try:
             res_read = s.get(URL_read_id,headers=header, timeout=net_timeout)
         except:
-            print(to_log("WARN", "服务器连接失败。"))
+            print(to_log("ERROR", "服务器连接失败。"))
             result_status = "error"
             return "error"
 
@@ -161,7 +161,7 @@ def miyoushe_forumPost(fid):
                 try:
                     res = s.get(URL, headers=header, timeout=net_timeout)
                 except:
-                    print(to_log("WARN", "服务器连接失败。"))
+                    print(to_log("ERROR", "服务器连接失败。"))
                     result_status = "error"
                     return "error"
                 it = iter(res_text['data']['list'])
@@ -173,7 +173,7 @@ def miyoushe_forumPost(fid):
         try:
             res_vote = s.post(URL_upvote, json=upvote_data, headers=header, timeout=net_timeout)
         except:
-            print(to_log("WARN", "服务器连接失败。"))
+            print(to_log("ERROR", "服务器连接失败。"))
             result_status = "error"
             return "error"
 
@@ -205,7 +205,7 @@ def sharePost(post_id):
     try:
         res_share = s.get(URL_post_share, headers=header, timeout=net_timeout)
     except:
-        print(to_log("WARN", "服务器连接失败。"))
+        print(to_log("ERROR", "服务器连接失败。"))
         result_status = "error"
         return "error"
     result = json.loads(res_share.text)
@@ -260,15 +260,15 @@ def start(userdata, setting):
         if timesleep_2 == '' or None:
             timesleep_2 = 4
     
-    timesleep_1 = int(timesleep_1)
-    timesleep_2 = int(timesleep_2)
+    timesleep_1 = float(timesleep_1)
+    timesleep_2 = float(timesleep_2)
 
     net_timeout = setting["timeout"]
 
     if net_timeout == '' or None:
         net_timeout = 10
 
-    net_timeout = int(net_timeout)
+    net_timeout = float(net_timeout)
 
     header["Cookie"] = 'stuid={0};stoken={1};'.format(stuid, stoken)
 
