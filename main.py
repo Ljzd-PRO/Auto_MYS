@@ -103,6 +103,7 @@ if result_error != {}:
             error_id = next(it)
             userdata["uid"] = conf.get("Cookies", "uid_{0}".format(error_id))
             userdata["stoken"] = conf.get("Cookies", "stoken_{0}".format(error_id))
+            userdata["id"] = error_id
             result = start.start(userdata, setting)
             if result == "success":
                 del result_error[error_id]
