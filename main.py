@@ -40,8 +40,8 @@ if timesleep_1 == '' or None:
     timesleep_1 = 2
 if timesleep_2 == '' or None:
     timesleep_2 = 4
-timesleep_1 = int(timesleep_1)
-timesleep_2 = int(timesleep_2)
+timesleep_1 = float(timesleep_1)
+timesleep_2 = float(timesleep_2)
 
 result_error = {}
 result_exception = {}
@@ -54,6 +54,7 @@ def check(i):
     else:
         return True
 
+## 开始操作
 i = 1
 while True:
     userdata["uid"] = conf.get("Cookies", "uid_{0}".format(i))
@@ -98,6 +99,7 @@ if result_exception != {}:
 print(start.to_log("INFO", "正在重启执行失败和异常用户的任务。"))
 if result_error != {}:
     it = iter(result_error)
+    del_error_id = []
     while True:
         try:
             error_id = next(it)
@@ -106,11 +108,15 @@ if result_error != {}:
             userdata["id"] = error_id
             result = start.start(userdata, setting)
             if result == "success":
-                del result_error[error_id]
+                del_error_id.append(error_id)
         except StopIteration:
+            if del_error_id != []:
+                for id in del_error_id:
+                    del result_error[id]
             break
 if result_exception != {}:
     it = iter(result_exception)
+    del_exception_id = []
     while True:
         try:
             exception_id = next(it)
@@ -118,8 +124,11 @@ if result_exception != {}:
             userdata["stoken"] = conf.get("Cookies", "stoken_{0}".format(exception_id))
             result = start.start(userdata, setting)
             if result == "success":
-                del result_exception[exception_id]
+                del_exception_id.append(exception_id)
         except StopIteration:
+            if del_exception_id != []:
+                for id in del_exception_id:
+                    del result_exception[id]
             break
 
 ## 再次检查执行失败的用户
