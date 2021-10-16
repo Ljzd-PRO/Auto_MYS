@@ -21,6 +21,7 @@ header = {"Accept-Encoding": "gzip, deflate, br",
                 "x-rpc-device_model": "iPhone11,8",
                 "x-rpc-device_name": "".join(random.sample('abcdefghijklmnopqrstuvwxyz0123456789', random.randrange(5))).upper(),
                 "x-rpc-sys_version": "14.0.1",}
+result_status = None
 
 ## 日志
 def get_file_path(file_name=""):
@@ -71,18 +72,22 @@ def miyoushe_signin(module_id):
 
     header["DS"] = get_DS()
 
-    ## 1: 崩坏3, 2: 原神, 3: 崩坏学园2, 4: 未定事件簿
+    ## 1: 崩坏3, 2: 原神, 3: 崩坏学园2, 4: 未定事件簿, 5: 崩坏：星穹铁道
     sign_data = {'gids': module_id} 
     url_signin = 'https://api-takumi.mihoyo.com/apihub/sapi/signIn'
     try:
         res_signin = s.post(url_signin, json=sign_data, headers=header, timeout=net_timeout)
     except:
-        print(to_log("WARN", "服务器连接失败。"))
+        print(to_log("ERROR", "服务器连接失败。"))
         result_status = "error"
         return "error"
     result = json.loads(res_signin.text)
-    if result["message"] == "签到成功":
-            print(to_log("INFO", "签到成功。"))
+    if result["message"] == "OK":
+            if "data" in result:
+                if "points" in result["data"]:
+                    print(to_log("INFO", "签到成功，获得 " + str(result["data"]["points"]) + " 米游币。"))
+            else:
+                print(to_log("INFO", "签到成功。"))
     elif result["message"] == "签到失败或重复签到":
         print(to_log("WARN", "签到失败或重复签到。"))
     else:
@@ -102,7 +107,7 @@ def miyoushe_forumPost(fid):
     try:
         res = s.get(URL, headers=header, timeout=net_timeout)
     except:
-        print(to_log("WARN", "服务器连接失败。"))
+        print(to_log("ERROR", "服务器连接失败。"))
         result_status = "error"
         return "error"
     res_text = json.loads(res.text)
@@ -124,7 +129,7 @@ def miyoushe_forumPost(fid):
         try:
             res_read = s.get(URL_read_id,headers=header, timeout=net_timeout)
         except:
-            print(to_log("WARN", "服务器连接失败。"))
+            print(to_log("ERROR", "服务器连接失败。"))
             result_status = "error"
             return "error"
 
@@ -148,7 +153,7 @@ def miyoushe_forumPost(fid):
             try:
                 like_status = next(it)
                 if like_status['self_operation']['attitude'] != 0:
-                    print(to_log("INFO","ID: " + like_status['post']['post_id'] + " —— 帖子已经点赞过了。"))
+                    print(to_log("INFO","帖子ID: " + like_status['post']['post_id'] + " —— 已经点赞过了。"))
                 else:
                     break
             except StopIteration:
@@ -156,7 +161,7 @@ def miyoushe_forumPost(fid):
                 try:
                     res = s.get(URL, headers=header, timeout=net_timeout)
                 except:
-                    print(to_log("WARN", "服务器连接失败。"))
+                    print(to_log("ERROR", "服务器连接失败。"))
                     result_status = "error"
                     return "error"
                 it = iter(res_text['data']['list'])
@@ -168,7 +173,7 @@ def miyoushe_forumPost(fid):
         try:
             res_vote = s.post(URL_upvote, json=upvote_data, headers=header, timeout=net_timeout)
         except:
-            print(to_log("WARN", "服务器连接失败。"))
+            print(to_log("ERROR", "服务器连接失败。"))
             result_status = "error"
             return "error"
 
@@ -200,7 +205,7 @@ def sharePost(post_id):
     try:
         res_share = s.get(URL_post_share, headers=header, timeout=net_timeout)
     except:
-        print(to_log("WARN", "服务器连接失败。"))
+        print(to_log("ERROR", "服务器连接失败。"))
         result_status = "error"
         return "error"
     result = json.loads(res_share.text)
@@ -218,9 +223,13 @@ def start(userdata, setting):
     global timesleep_1
     global timesleep_2
     global net_timeout
+    global result_status
+
+    result_status = None
 
     stuid = userdata["uid"]
     stoken = userdata["stoken"]
+    id = userdata["id"]
     if stuid == '' or None:
         print(to_log("ERROR", "请设置用户Cookies数据！"))
         return "error"
@@ -233,7 +242,7 @@ def start(userdata, setting):
         print(to_log("ERROR", "请设置游戏板块module_id的值！"))
         return "error"
     
-    print(to_log("INFO", "用户 {0}：开始任务。".format(stuid)))
+    print(to_log("INFO", "用户 uid_{0} - {1}：任务开始。".format(id, stuid)))
 
     fid_list = {
         '1': '1',
@@ -252,15 +261,15 @@ def start(userdata, setting):
         if timesleep_2 == '' or None:
             timesleep_2 = 4
     
-    timesleep_1 = int(timesleep_1)
-    timesleep_2 = int(timesleep_2)
+    timesleep_1 = float(timesleep_1)
+    timesleep_2 = float(timesleep_2)
 
     net_timeout = setting["timeout"]
 
     if net_timeout == '' or None:
         net_timeout = 10
 
-    net_timeout = int(net_timeout)
+    net_timeout = float(net_timeout)
 
     header["Cookie"] = 'stuid={0};stoken={1};'.format(stuid, stoken)
 
@@ -272,7 +281,7 @@ def start(userdata, setting):
     fid = int(fid_list[str(module_id)])
     miyoushe_forumPost(fid)
 
-    print(to_log("INFO", "用户 {0}：任务结束。".format(stuid)))
+    print(to_log("INFO", "用户 uid_{0} - {1}：任务结束。".format(id, stuid)))
     if result_status == "error":
         return "error"
     else:
