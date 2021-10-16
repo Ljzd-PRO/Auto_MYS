@@ -30,6 +30,9 @@ setting = {
 }
 
 setting["module_id"] = conf.get("Settings", "module_id")
+setting["module_id"] = setting["module_id"].replace(" ", "")
+setting["module_id"] = setting["module_id"].split(",")
+
 setting["t1"] = conf.get("Settings", "t1")
 setting["t2"] = conf.get("Settings", "t2")
 setting["timeout"] = conf.get("Settings", "timeout")
