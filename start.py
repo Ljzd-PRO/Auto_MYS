@@ -7,6 +7,8 @@ import sys
 import os
 
 s = requests.Session()
+result_status = None
+
 header = {"Accept-Encoding": "gzip, deflate, br",
                 "Accept-Language": "zh-cn",
                 "Connection": "keep-alive",
@@ -21,7 +23,16 @@ header = {"Accept-Encoding": "gzip, deflate, br",
                 "x-rpc-device_model": "iPhone11,8",
                 "x-rpc-device_name": "".join(random.sample('abcdefghijklmnopqrstuvwxyz0123456789', random.randrange(5))).upper(),
                 "x-rpc-sys_version": "14.0.1",}
-result_status = None
+
+## 版区ID对应的fid值和版区名字
+fid_list = {
+        '1': ['1', "崩坏3"],
+        '2': ['26', "原神"],
+        '3': ['30', "崩坏学园2"],
+        '4': ['37', "未定事件簿"],
+        '5': ['52', "崩坏：星穹铁道"]
+    }
+
 
 ## 日志
 def get_file_path(file_name=""):
@@ -61,45 +72,59 @@ def get_DS():
     re = hashlib.md5(f"salt=b253c83ab2609b1b600eddfe974df47b&t={t}&r={a}".encode(encoding="utf-8")).hexdigest()
     return f"{t},{a},{re}"
 
+## 判断 module_id 是否符合规则
+def check_module(module_list):
+    for module in module_list:
+        status = None
+        it = iter(fid_list)
+        while True:
+            try:
+                if module == next(it):
+                    status = True
+            except StopIteration:
+                if status != True:
+                    return False
+                else:
+                    break
+    return True
+
+## 获取版区ID对应的名字
+def get_name(module_id):
+    if isinstance(module_id, int):
+        module_id = str(module_id)
+    return fid_list[module_id][1]
 
 ## 签到：
 def miyoushe_signin(module_id):
-    """
-    docstring
-    """
     global header
     global result_status
 
     header["DS"] = get_DS()
 
-    ## 1: 崩坏3, 2: 原神, 3: 崩坏学园2, 4: 未定事件簿, 5: 崩坏：星穹铁道
     sign_data = {'gids': module_id} 
     url_signin = 'https://api-takumi.mihoyo.com/apihub/sapi/signIn'
     try:
         res_signin = s.post(url_signin, json=sign_data, headers=header, timeout=net_timeout)
     except:
-        print(to_log("ERROR", "服务器连接失败。"))
+        print(to_log("ERROR", get_name(module_id) + " - 服务器连接失败。"))
         result_status = "error"
         return "error"
     result = json.loads(res_signin.text)
     if result["message"] == "OK":
             if "data" in result:
                 if "points" in result["data"]:
-                    print(to_log("INFO", "签到成功，获得 " + str(result["data"]["points"]) + " 米游币。"))
+                    print(to_log("INFO", get_name(module_id) + " - 签到成功，获得 " + str(result["data"]["points"]) + " 米游币。"))
             else:
-                print(to_log("INFO", "签到成功。"))
+                print(to_log("INFO", get_name(module_id) + " - 签到成功。"))
     elif result["message"] == "签到失败或重复签到":
-        print(to_log("WARN", "签到失败或重复签到。"))
+        print(to_log("WARN", get_name(module_id) + " - 签到失败或重复签到。"))
     else:
-        print(to_log("ERROR", "签到出错!"))
+        print(to_log("ERROR", get_name(module_id) + " - 签到出错!"))
         result_status = "error"
 
 
 ## 帖子相关：阅读，点赞，分享
-def miyoushe_forumPost(fid):
-    """
-    1, 26, 30, 37, 52
-    """
+def miyoushe_forumPost(fid, module_id):
     global header
     global result_status
 
@@ -107,7 +132,7 @@ def miyoushe_forumPost(fid):
     try:
         res = s.get(URL, headers=header, timeout=net_timeout)
     except:
-        print(to_log("ERROR", "服务器连接失败。"))
+        print(to_log("ERROR", get_name(module_id) + " - 服务器连接失败。"))
         result_status = "error"
         return "error"
     res_text = json.loads(res.text)
@@ -129,15 +154,15 @@ def miyoushe_forumPost(fid):
         try:
             res_read = s.get(URL_read_id,headers=header, timeout=net_timeout)
         except:
-            print(to_log("ERROR", "服务器连接失败。"))
+            print(to_log("ERROR", get_name(module_id) + " - 服务器连接失败。"))
             result_status = "error"
             return "error"
 
         result = json.loads(res_read.text)
         if result["message"] == "OK":
-            print(to_log("INFO", "帖子ID：" + post_id + " —— 阅读成功。"))
+            print(to_log("INFO", get_name(module_id) + " - 帖子 " + post_id + " - 阅读成功。"))
         else:
-            print(to_log("ERROR", "帖子ID：" + post_id + " —— 阅读失败！"))
+            print(to_log("ERROR", get_name(module_id) + " - 帖子 " + post_id + " - 阅读失败！"))
             result_status = "error"
 
         time.sleep(random.uniform(timesleep_1, timesleep_2))
@@ -153,15 +178,15 @@ def miyoushe_forumPost(fid):
             try:
                 like_status = next(it)
                 if like_status['self_operation']['attitude'] != 0:
-                    print(to_log("INFO","帖子ID: " + like_status['post']['post_id'] + " —— 已经点赞过了。"))
+                    print(to_log("INFO", get_name(module_id) + " - 帖子 " + like_status['post']['post_id'] + " - 已经赞过了。"))
                 else:
                     break
             except StopIteration:
-                print(to_log("INFO","帖子列表中所有帖子都已经点赞，正在获取新的列表。"))
+                print(to_log("INFO", get_name(module_id) + " - 帖子列表中所有帖子都已经点赞，正在获取新的列表。"))
                 try:
                     res = s.get(URL, headers=header, timeout=net_timeout)
                 except:
-                    print(to_log("ERROR", "服务器连接失败。"))
+                    print(to_log("ERROR", get_name(module_id) + " - 服务器连接失败。"))
                     result_status = "error"
                     return "error"
                 it = iter(res_text['data']['list'])
@@ -173,15 +198,15 @@ def miyoushe_forumPost(fid):
         try:
             res_vote = s.post(URL_upvote, json=upvote_data, headers=header, timeout=net_timeout)
         except:
-            print(to_log("ERROR", "服务器连接失败。"))
+            print(to_log("ERROR", get_name(module_id) + " - 服务器连接失败。"))
             result_status = "error"
             return "error"
 
         result = json.loads(res_vote.text)
         if result['message'] == 'OK':
-            print(to_log("INFO", "帖子ID：" + post_id + " —— 点赞成功。"))
+            print(to_log("INFO", get_name(module_id) + " - 帖子 " + post_id + " - 点赞成功。"))
         else:
-            print(to_log("ERROR", "帖子ID：" + post_id + " —— 点赞失败！"))
+            print(to_log("ERROR", get_name(module_id) + " - 帖子 " + post_id + " - 点赞失败！"))
             result_status = "error"
         
         if count != 9:
@@ -190,13 +215,11 @@ def miyoushe_forumPost(fid):
         count += 1
     
     ## 分享最后一帖
-    sharePost(post_id)
-
-    print(to_log("INFO", "帖子相关操作结束。"))
+    sharePost(post_id, module_id)
 
 
 ## 分享：
-def sharePost(post_id):
+def sharePost(post_id, module_id):
     global header
     global result_status
 
@@ -205,14 +228,14 @@ def sharePost(post_id):
     try:
         res_share = s.get(URL_post_share, headers=header, timeout=net_timeout)
     except:
-        print(to_log("ERROR", "服务器连接失败。"))
+        print(to_log("ERROR", get_name(module_id) + " - 服务器连接失败。"))
         result_status = "error"
         return "error"
     result = json.loads(res_share.text)
     if result['message'] == 'OK':
-        print(to_log("INFO", "帖子ID：" + post_id + " —— 转发成功。"))
+        print(to_log("INFO", get_name(module_id) + " - 帖子 " + post_id + " —— 转发成功。"))
     else:
-        print(to_log("ERROR", "帖子ID：" + post_id + " —— 转发失败！"))
+        print(to_log("ERROR", get_name(module_id) + " - 帖子 " + post_id + " —— 转发失败！"))
         result_status = "error"
 
 
@@ -237,36 +260,35 @@ def start(userdata, setting):
         print(to_log("ERROR", "请设置用户Cookies数据！"))
         return "error"
     
-    module_id = setting["module_id"]
-    if module_id == '' or None:
+    module_list = setting["module_id"]
+    if module_list == [''] or None:
         print(to_log("ERROR", "请设置游戏板块module_id的值！"))
         return "error"
-    
+    elif check_module(module_list) == False:
+        print(to_log("ERROR", "请设置正确的游戏板块module_id值！"))
+        return "error"
+
     print(to_log("INFO", "用户 uid_{0} - {1}：任务开始。".format(id, stuid)))
 
-    fid_list = {
-        '1': '1',
-        '2': '26',
-        '3': '30',
-        '4': '37',
-        '5': '52'
-    }
 
-    ### 冷却时间范围 (timesleep_1 ~ timesleep_2)
+    ## 操作冷却时间范围(timesleep_1 ~ timesleep_2)
     timesleep_1 = setting["t1"]
     timesleep_2 = setting["t2"]
 
-    if timesleep_1 == '' or None:
+    if timesleep_1 == '' or timesleep_1 == None:
         timesleep_1 = 2
-        if timesleep_2 == '' or None:
-            timesleep_2 = 4
+        timesleep_2 = 4
+    if timesleep_2 == '' or timesleep_2 == None:
+        timesleep_1 = 2
+        timesleep_2 = 4
     
     timesleep_1 = float(timesleep_1)
     timesleep_2 = float(timesleep_2)
 
+
     net_timeout = setting["timeout"]
 
-    if net_timeout == '' or None:
+    if net_timeout == '' or net_timeout == None:
         net_timeout = 10
 
     net_timeout = float(net_timeout)
@@ -274,12 +296,21 @@ def start(userdata, setting):
     header["Cookie"] = 'stuid={0};stoken={1};'.format(stuid, stoken)
 
     ## 签到
-    module_id = int(module_id)
-    miyoushe_signin(module_id)
+    for module_id in module_list:
+        module_id = int(module_id)
+        miyoushe_signin(module_id)
+        time.sleep(random.uniform(timesleep_1, timesleep_2))
 
     ## 帖子相关：阅读，点赞，分享
-    fid = int(fid_list[str(module_id)])
-    miyoushe_forumPost(fid)
+    it = iter(module_list)
+    while True:
+        try:
+            module_id = next(it)
+            fid = int(fid_list[module_id][0])
+            miyoushe_forumPost(fid, module_id)
+            time.sleep(random.uniform(timesleep_1, timesleep_2))
+        except StopIteration:
+            break
 
     print(to_log("INFO", "用户 uid_{0} - {1}：任务结束。".format(id, stuid)))
     if result_status == "error":
