@@ -15,7 +15,7 @@ def get_file_path(file_name=""):
 
 print(start.to_log("INFO", "程序启动。"))
 conf = configparser.ConfigParser()
-conf.read(get_file_path("config.ini"))
+conf.read(get_file_path("config.ini"), encoding = "utf-8")
 
 userdata = {
     "uid":"",
