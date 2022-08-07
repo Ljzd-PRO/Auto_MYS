@@ -69,7 +69,7 @@ def get_DS():
     #       2. https://github.com/jianggaocheng/mihoyo-signin/blob/master/lib/mihoyoClient.js
     t = int(time.time())
     a = "".join(random.sample('abcdefghijklmnopqrstuvwxyz0123456789', 6))
-    re = hashlib.md5(f"salt=b253c83ab2609b1b600eddfe974df47b&t={t}&r={a}".encode(encoding="utf-8")).hexdigest()
+    re = hashlib.md5(f"salt=9nQiU3AV0rJSIBWgdynfoGMGKaklfbM7&t={t}&r={a}".encode(encoding="utf-8")).hexdigest()
     return f"{t},{a},{re}"
 
 ## 判断 module_id 是否符合规则
@@ -102,7 +102,7 @@ def miyoushe_signin(module_id):
     header["DS"] = get_DS()
 
     sign_data = {'gids': module_id} 
-    url_signin = 'https://api-takumi.mihoyo.com/apihub/sapi/signIn'
+    url_signin = 'https://bbs-api.mihoyo.com/apihub/app/api/signIn'
     try:
         res_signin = s.post(url_signin, json=sign_data, headers=header, timeout=net_timeout)
     except:
@@ -128,7 +128,7 @@ def miyoushe_forumPost(fid, module_id):
     global header
     global result_status
 
-    URL = "https://api-takumi.mihoyo.com/post/api/getForumPostList?forum_id={}&is_good=false&is_hot=false&page_size=20&sort=create".format(fid)
+    URL = "https://bbs-api.mihoyo.com/apihub/app/api/getForumPostList?forum_id={}&is_good=false&is_hot=false&page_size=20&sort=create".format(fid)
     try:
         res = s.get(URL, headers=header, timeout=net_timeout)
     except:
@@ -137,8 +137,8 @@ def miyoushe_forumPost(fid, module_id):
         return "error"
     res_text = json.loads(res.text)
 
-    URL_upvote = 'https://api-takumi.mihoyo.com/apihub/sapi/upvotePost'
-    URL_read = 'https://api-takumi.mihoyo.com/post/api/getPostFull?post_id='
+    URL_upvote = 'https://bbs-api.mihoyo.com/apihub/sapi/upvotePost'
+    URL_read = 'https://bbs-api.mihoyo.com/post/api/getPostFull?post_id='
 
     
 
